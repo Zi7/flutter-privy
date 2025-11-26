@@ -1,0 +1,270 @@
+{
+	"info": {
+		"_postman_id": "ddd1f04b-4f38-402b-8c41-26cd372737a5",
+		"name": "Privy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "662577"
+	},
+	"item": [
+		{
+			"name": "Privy lấy số dư ETH",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic Y21pN2NvbTcxMDUycWw0MGMwb3B1N3RmZjphclpxUEViMlgyWm12R3lqTEhHdnJUNko4YVh1dWRwczYxNHJIcFBnUkgzNTQ1RllFUjd1bllLZ2c2MTVoNVYyN2pwR3B6VjhXS0Z1ejNnTUJlZ1BBUW0=",
+						"type": "text"
+					},
+					{
+						"key": "privy-app-id",
+						"value": "cmi7com71052ql40c0opu7tff",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api.privy.io/v1/wallets/chemxmxj4k07wbwo14e1qmbr/balance?asset=eth&chain=ethereum",
+					"protocol": "https",
+					"host": [
+						"api",
+						"privy",
+						"io"
+					],
+					"path": [
+						"v1",
+						"wallets",
+						"chemxmxj4k07wbwo14e1qmbr",
+						"balance"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "eth"
+						},
+						{
+							"key": "chain",
+							"value": "ethereum"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Privy lấy số dư ETH sepolia",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic Y21pN2NvbTcxMDUycWw0MGMwb3B1N3RmZjphclpxUEViMlgyWm12R3lqTEhHdnJUNko4YVh1dWRwczYxNHJIcFBnUkgzNTQ1RllFUjd1bllLZ2c2MTVoNVYyN2pwR3B6VjhXS0Z1ejNnTUJlZ1BBUW0=",
+						"type": "text"
+					},
+					{
+						"key": "privy-app-id",
+						"value": "cmi7com71052ql40c0opu7tff",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api.privy.io/v1/wallets/chemxmxj4k07wbwo14e1qmbr/balance?asset=eth&chain=sepolia",
+					"protocol": "https",
+					"host": [
+						"api",
+						"privy",
+						"io"
+					],
+					"path": [
+						"v1",
+						"wallets",
+						"chemxmxj4k07wbwo14e1qmbr",
+						"balance"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "eth"
+						},
+						{
+							"key": "chain",
+							"value": "sepolia"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Privy lấy số dư SOL",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic Y21pN2NvbTcxMDUycWw0MGMwb3B1N3RmZjphclpxUEViMlgyWm12R3lqTEhHdnJUNko4YVh1dWRwczYxNHJIcFBnUkgzNTQ1RllFUjd1bllLZ2c2MTVoNVYyN2pwR3B6VjhXS0Z1ejNnTUJlZ1BBUW0=",
+						"type": "text"
+					},
+					{
+						"key": "privy-app-id",
+						"value": "cmi7com71052ql40c0opu7tff",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api.privy.io/v1/wallets/rxfos6oenmg0d9hzywv06a5m/balance?asset=sol&chain=solana",
+					"protocol": "https",
+					"host": [
+						"api",
+						"privy",
+						"io"
+					],
+					"path": [
+						"v1",
+						"wallets",
+						"rxfos6oenmg0d9hzywv06a5m",
+						"balance"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "sol"
+						},
+						{
+							"key": "chain",
+							"value": "solana"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Privy lấy số dư SOL solana_devnet",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic Y21pN2NvbTcxMDUycWw0MGMwb3B1N3RmZjphclpxUEViMlgyWm12R3lqTEhHdnJUNko4YVh1dWRwczYxNHJIcFBnUkgzNTQ1RllFUjd1bllLZ2c2MTVoNVYyN2pwR3B6VjhXS0Z1ejNnTUJlZ1BBUW0=",
+						"type": "text"
+					},
+					{
+						"key": "privy-app-id",
+						"value": "cmi7com71052ql40c0opu7tff",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api.privy.io/v1/wallets/rxfos6oenmg0d9hzywv06a5m/balance?asset=sol&chain=solana_devnet",
+					"protocol": "https",
+					"host": [
+						"api",
+						"privy",
+						"io"
+					],
+					"path": [
+						"v1",
+						"wallets",
+						"rxfos6oenmg0d9hzywv06a5m",
+						"balance"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "sol"
+						},
+						{
+							"key": "chain",
+							"value": "solana_devnet"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Privy ETH Transaction history sepolia",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic Y21pN2NvbTcxMDUycWw0MGMwb3B1N3RmZjphclpxUEViMlgyWm12R3lqTEhHdnJUNko4YVh1dWRwczYxNHJIcFBnUkgzNTQ1RllFUjd1bllLZ2c2MTVoNVYyN2pwR3B6VjhXS0Z1ejNnTUJlZ1BBUW0=",
+						"type": "text"
+					},
+					{
+						"key": "privy-app-id",
+						"value": "cmi7com71052ql40c0opu7tff",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "jsonrpc",
+							"value": "2.0",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "id",
+							"value": "1",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "method",
+							"value": "getLatestBlockhash",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "params",
+							"value": "[]",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "https://api.privy.io/v1/wallets/chemxmxj4k07wbwo14e1qmbr/transactions?asset=eth&chain=sepolia",
+					"protocol": "https",
+					"host": [
+						"api",
+						"privy",
+						"io"
+					],
+					"path": [
+						"v1",
+						"wallets",
+						"chemxmxj4k07wbwo14e1qmbr",
+						"transactions"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "eth"
+						},
+						{
+							"key": "chain",
+							"value": "sepolia"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

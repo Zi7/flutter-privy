@@ -1,0 +1,33 @@
+PODS:
+  - Factory (2.4.3)
+  - Flutter (1.0.0)
+  - privy_flutter (0.0.1):
+    - Factory (= 2.4.3)
+    - Flutter
+    - PrivySDK (= 2.4.1)
+  - PrivySDK (2.4.1)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - privy_flutter (from `.symlinks/plugins/privy_flutter/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Factory
+    - PrivySDK
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  privy_flutter:
+    :path: ".symlinks/plugins/privy_flutter/ios"
+
+SPEC CHECKSUMS:
+  Factory: 9d20d8cb56fc44b341d6dad1cf67dc93e9ae7788
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  privy_flutter: 7c600cb815ead15254658fe0203e16cde058b8bb
+  PrivySDK: 30b6ea6bde2a34f71e813ecd57100d80913c6f02
+
+PODFILE CHECKSUM: 925325d20e05a8bbfce919e0da669633c652835f
+
+COCOAPODS: 1.16.2
