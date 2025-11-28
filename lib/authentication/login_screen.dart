@@ -73,7 +73,7 @@ class LoginScreenState extends State<LoginScreen> {
                   children: [
                     const SizedBox(height: 24),
                     Text(
-                      "Privy",
+                      "APEX",
                       style: Theme.of(context).textTheme.headlineLarge,
                     ),
                     const SizedBox(height: 30),
@@ -117,7 +117,7 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      "Initializing Privy...",
+                      "Initializing APEX...",
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],

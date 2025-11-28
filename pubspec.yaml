@@ -36,7 +36,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   privy_flutter: ^0.4.0
   convert: ^3.1.1
-  
+  qr_flutter: ^4.1.0
+  flutter_svg: ^2.0.21
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -89,3 +91,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  assets:
+    - assets/icons/

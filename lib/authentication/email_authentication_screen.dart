@@ -145,9 +145,10 @@ class EmailAuthenticationScreenState extends State<EmailAuthenticationScreen> {
               children: [
                 Text(
                   'Email Authentication',
-                  style: Theme.of(context).textTheme.headlineLarge,
-                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge,
+                  textAlign: TextAlign.left,
                 ),
+                const SizedBox(height: 20),
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(

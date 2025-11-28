@@ -445,7 +445,7 @@ class _EthWalletScreenState extends State<EthWalletScreen> {
                         child: const Text('Sign Transaction'),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _sendTransaction,

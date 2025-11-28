@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Privy",
+      title: "APEX",
       debugShowCheckedModeBanner: false,
       home: const LoginScreen(),
       theme: ThemeData(
