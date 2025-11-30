@@ -38,6 +38,12 @@ dependencies:
   convert: ^3.1.1
   qr_flutter: ^4.1.0
   flutter_svg: ^2.0.21
+  get: ^4.6.6
+  flutter_secure_storage: ^8.0.0
+  shared_preferences: ^2.2.1
+  fluttertoast: ^8.2.12
+  url_launcher: ^6.3.1
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

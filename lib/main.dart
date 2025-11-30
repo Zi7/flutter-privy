@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'authentication/login_screen.dart';
+import 'di.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DI.init();
   runApp(const MyApp());
 }
 

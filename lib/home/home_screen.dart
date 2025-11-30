@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:privy_flutter/privy_flutter.dart';
 import 'package:privyio/app_assets.dart';
+import 'package:privyio/data/model/transaction_models.dart' as api_models;
+import 'package:privyio/data/repositories/api_repo.dart';
+import 'package:privyio/data/repositories/app_storage.dart';
 import 'package:privyio/home_privy/home_privy_screen.dart';
+import 'package:privyio/utils/number_util.dart';
 
 import '../deposit/deposit_screen.dart';
 import '../privy_manager.dart';
@@ -22,11 +26,88 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _privyManager = privyManager;
   PrivyUser? _currentUser;
+  List<api_models.Transaction> _transactions = [];
+  bool _isLoadingTransactions = true;
+  double _totalBalance = 0;
 
   @override
   void initState() {
     super.initState();
     _currentUser = widget.user;
+    _loginApex();
+  }
+
+  _loginApex() async {
+    try {
+      final result = await _currentUser!.getAccessToken();
+      result.fold(
+        onSuccess: (value) async {
+          final res = await ApiRepo.to.login(value);
+          if (res.data.accessToken.isNotEmpty) {
+            AppStorage().setString(SKeys.token, res.data.accessToken);
+            _fetchBalance();
+            _fetchUserTransactions();
+          }
+        },
+        onFailure: (error) {
+          print(error);
+        },
+      );
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  _fetchBalance() async {
+    final res = await ApiRepo.to.getWalletBalance(
+      walletId: _currentUser!.embeddedEthereumWallets.first.id!,
+      asset: 'eth',
+      chain: 'sepolia',
+    );
+    final res2 = await ApiRepo.to.getWalletBalance(
+      walletId: _currentUser!.embeddedSolanaWallets.first.id!,
+      asset: 'sol',
+      chain: 'solana_devnet',
+    );
+    setState(() {
+      _totalBalance =
+          _doubleOf(res.data!.balances!.first.displayValues!.usd) +
+          _doubleOf(res2.data!.balances!.first.displayValues!.usd);
+    });
+  }
+
+  _doubleOf(String? value) {
+    return double.tryParse(value!) ?? 0;
+  }
+
+  _fetchUserTransactions() async {
+    try {
+      setState(() {
+        _isLoadingTransactions = true;
+      });
+
+      final res = await ApiRepo.to.getTransactionsFromPrivy(
+        walletId: _currentUser!.embeddedEthereumWallets.first.id!,
+        asset: 'eth',
+        chain: 'sepolia',
+      );
+
+      if (res.data != null && res.data!.transactions != null) {
+        setState(() {
+          _transactions = res.data!.transactions!;
+          _isLoadingTransactions = false;
+        });
+      } else {
+        setState(() {
+          _isLoadingTransactions = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching transactions: $e');
+      setState(() {
+        _isLoadingTransactions = false;
+      });
+    }
   }
 
   void _navigateToSettings() {
@@ -126,8 +207,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '\$0.00',
+          Text(
+            '\$${_totalBalance.formatDouble()}',
             style: TextStyle(
               fontSize: 40,
               fontWeight: FontWeight.w600,
@@ -216,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Text(
                   'Deposit Your\nFirst Token',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     height: 1.4,
                     fontWeight: FontWeight.w500,
                   ),
@@ -224,8 +305,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: _navigateToDeposit,
-                  icon: const Icon(Icons.arrow_downward, size: 18),
-                  label: const Text('Receive'),
+                  icon: const Icon(Icons.arrow_downward, size: 14),
+                  label: const Text('Receive', style: TextStyle(fontSize: 14)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
@@ -275,20 +356,50 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTransactionItem(
-            type: 'Sent',
-            amount: '\$10.0244',
-            subAmount: '10.0174',
-            isPositive: false,
+          const Text(
+            'Transaction History',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
-          const Divider(height: 32),
-          _buildTransactionItem(
-            type: 'Received',
-            amount: '\$9.9951',
-            subAmount: '10.0174',
-            isPositive: true,
-          ),
+          const SizedBox(height: 16),
+          if (_isLoadingTransactions)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_transactions.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Text(
+                  'No transactions yet',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _transactions.length,
+              separatorBuilder: (context, index) => const Divider(height: 32),
+              itemBuilder: (context, index) {
+                final transaction = _transactions[index];
+                final details = transaction.details;
+                final isReceived = details?.type == 'transfer_received';
+
+                return _buildTransactionItem(
+                  type: isReceived ? 'Received' : 'Sent',
+                  amount: details?.displayValues?.eth ?? '0',
+                  subAmount: details?.rawValue ?? '0',
+                  isPositive: isReceived,
+                  transaction: transaction,
+                );
+              },
+            ),
         ],
       ),
     );
@@ -299,7 +410,11 @@ class _HomeScreenState extends State<HomeScreen> {
     required String amount,
     required String subAmount,
     required bool isPositive,
+    api_models.Transaction? transaction,
   }) {
+    final assetName = transaction?.details?.asset?.toUpperCase() ?? 'ETH';
+    final status = transaction?.status ?? 'completed';
+
     return GestureDetector(
       onTap:
           () => _showTransactionDetail(
@@ -307,32 +422,29 @@ class _HomeScreenState extends State<HomeScreen> {
             amount: amount,
             subAmount: subAmount,
             isPositive: isPositive,
+            transaction: transaction,
           ),
       behavior: HitTestBehavior.opaque,
       child: Row(
         children: [
-          AppSvg.icUsdt(size: 40),
+          AppSvg.icEth(size: 40),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      isPositive ? Icons.arrow_downward : Icons.arrow_upward,
-                      size: 14,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      type,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
+                Text(
+                  type,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
                 ),
-                const SizedBox(height: 4),
-                const Text('Tether USD', style: TextStyle(fontSize: 14)),
+                Text(
+                  assetName,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                ),
               ],
             ),
           ),
@@ -340,17 +452,34 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                amount,
+                '${isPositive ? '+' : '-'}$amount $assetName',
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w500,
                   color: isPositive ? const Color(0xFF26A17B) : Colors.black,
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                subAmount,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color:
+                      status == 'completed'
+                          ? Colors.green[50]
+                          : Colors.orange[50],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color:
+                        status == 'completed'
+                            ? Colors.green[700]
+                            : Colors.orange[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ],
           ),
@@ -364,24 +493,36 @@ class _HomeScreenState extends State<HomeScreen> {
     required String amount,
     required String subAmount,
     required bool isPositive,
+    api_models.Transaction? transaction,
   }) {
-    final transaction = Transaction(
+    final assetName = transaction?.details?.asset?.toUpperCase() ?? 'ETH';
+
+    final localTransaction = Transaction(
       type: type,
       amount: amount,
       subAmount: subAmount,
       isPositive: isPositive,
-      assetName: 'Tether USD',
-      assetSymbol: 'USDT',
-      sentTo: '0xe8...ca76',
-      blockchainFees: 'Free',
-      network: 'BSC',
-      date: '25 November, 2025 09:17 AM',
-      status: 'completed',
+      assetName: assetName,
+      assetSymbol: assetName,
+      fromTo:
+          isPositive
+              ? (transaction?.details?.sender ?? 'Unknown')
+              : (transaction?.details?.recipient ?? 'Unknown'),
+      blockchainFees: 'Network fees',
+      network: transaction?.details?.chain ?? 'Sepolia',
+      date:
+          transaction?.createdAt != null
+              ? DateTime.fromMillisecondsSinceEpoch(
+                transaction!.createdAt!,
+              ).toString().replaceAll('.000', '')
+              : 'Unknown',
+      status: transaction?.status ?? 'completed',
       statusDescription:
-          'Received your request to send 10.017396000000000000 Tether USD on BSC',
+          '${isPositive ? 'Received' : 'Sent'} $amount $assetName',
+      url: 'https://sepolia.etherscan.io/tx/${transaction?.transactionHash}',
     );
 
-    TransactionDetailBottomSheet.show(context, transaction: transaction);
+    TransactionDetailBottomSheet.show(context, transaction: localTransaction);
   }
 
   @override

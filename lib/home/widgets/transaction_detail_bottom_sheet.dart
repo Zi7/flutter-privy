@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:privyio/app_assets.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/transaction.dart';
 
@@ -44,7 +46,7 @@ class TransactionDetailBottomSheet extends StatelessWidget {
           const SizedBox(height: 20),
           // Header
           Text(
-            transaction.isPositive ? 'Send' : 'Received',
+            transaction.isPositive ? 'Received' : 'Sent',
             style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
           const SizedBox(height: 12),
@@ -53,14 +55,14 @@ class TransactionDetailBottomSheet extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                transaction.subAmount,
+                transaction.amount,
                 style: const TextStyle(
                   fontSize: 36,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(width: 8),
-              AppSvg.icUsdt(size: 32),
+              AppSvg.icEth(size: 32),
             ],
           ),
           const SizedBox(height: 24),
@@ -71,14 +73,20 @@ class TransactionDetailBottomSheet extends StatelessWidget {
               children: [
                 _buildStatusItem(
                   icon: Icons.check_circle,
-                  title: 'Request Received',
+                  title:
+                      transaction.isPositive
+                          ? 'Request Received'
+                          : 'Request Sent',
                   description: transaction.statusDescription,
                   isCompleted: true,
                   isLast: false,
                 ),
                 _buildStatusItem(
                   icon: Icons.check_circle,
-                  title: 'Sent on ${transaction.network}',
+                  title:
+                      transaction.isPositive
+                          ? 'Received on ${transaction.network}'
+                          : 'Sent on ${transaction.network}',
                   isCompleted: true,
                   isLast: true,
                 ),
@@ -93,16 +101,16 @@ class TransactionDetailBottomSheet extends StatelessWidget {
               children: [
                 _buildDetailRow(
                   icon: Icons.person_rounded,
-                  label: 'Sent To',
-                  value: transaction.sentTo,
+                  label: transaction.isPositive ? 'From' : 'To',
+                  value: transaction.fromTo,
                   showCopy: true,
                 ),
-                const SizedBox(height: 16),
-                _buildDetailRow(
-                  icon: Icons.receipt_rounded,
-                  label: 'Blockchain Fees',
-                  value: transaction.blockchainFees,
-                ),
+                // const SizedBox(height: 16),
+                // _buildDetailRow(
+                //   icon: Icons.receipt_rounded,
+                //   label: 'Blockchain Fees',
+                //   value: transaction.blockchainFees,
+                // ),
                 const SizedBox(height: 16),
                 _buildDetailRow(
                   icon: Icons.language_rounded,
@@ -127,8 +135,10 @@ class TransactionDetailBottomSheet extends StatelessWidget {
               width: double.infinity,
               height: 46,
               child: OutlinedButton(
-                onPressed: () {
-                  // Open block explorer
+                onPressed: () async {
+                  if (await canLaunchUrl(Uri.parse(transaction.url))) {
+                    launchUrl(Uri.parse(transaction.url));
+                  }
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.black),
@@ -143,12 +153,12 @@ class TransactionDetailBottomSheet extends StatelessWidget {
                       'View On Block Explorer',
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: Colors.black,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Icon(Icons.open_in_new, size: 18, color: Colors.black),
+                    Icon(Icons.open_in_new, size: 14, color: Colors.black),
                   ],
                 ),
               ),
@@ -195,7 +205,7 @@ class TransactionDetailBottomSheet extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               if (description != null) ...[
@@ -231,14 +241,26 @@ class TransactionDetailBottomSheet extends StatelessWidget {
           ),
         ),
         if (showNetworkIcon) ...[
-          AppSvg.icBsc(size: 20),
+          AppSvg.icEth(size: 20),
           const SizedBox(width: 8),
         ],
-        Text(value, style: const TextStyle(fontSize: 14, color: Colors.black)),
+        Text(
+          showCopy ? _formatAddress(value) : value,
+          style: const TextStyle(fontSize: 14, color: Colors.black),
+        ),
         if (showCopy) ...[
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
+              Fluttertoast.showToast(
+                msg: "Copied to clipboard",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.black,
+                textColor: Colors.white,
+                fontSize: 16.0,
+              );
               Clipboard.setData(ClipboardData(text: value));
             },
             child: Icon(Icons.copy_rounded, size: 16, color: Colors.black),
@@ -246,5 +268,9 @@ class TransactionDetailBottomSheet extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  _formatAddress(String sentTo) {
+    return '${sentTo.substring(0, 8)}...${sentTo.substring(sentTo.length - 6)}';
   }
 }
