@@ -3,11 +3,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:privy_flutter/privy_flutter.dart';
+import 'package:privyio/app_assets.dart';
 
 class WithdrawScreen extends StatefulWidget {
   final EmbeddedEthereumWallet ethereumWallet;
+  final double amount;
 
-  const WithdrawScreen({super.key, required this.ethereumWallet});
+  const WithdrawScreen({
+    super.key,
+    required this.ethereumWallet,
+    required this.amount,
+  });
 
   @override
   State<WithdrawScreen> createState() => _WithdrawScreenState();
@@ -43,10 +49,6 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
         _addressController.text = data!.text!;
       });
     }
-  }
-
-  void _scanQRCode() {
-    _showMessage('QR Scanner not implemented');
   }
 
   Future<void> _sendTransaction() async {
@@ -91,6 +93,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
           _showMessage("Transaction sent! Hash: ${response.data.toString()}");
           _addressController.clear();
           _amountController.clear();
+          Navigator.pop(context);
         },
         onFailure: (error) {
           _showMessage("Transaction failed: ${error.message}", isError: true);
@@ -149,24 +152,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Ξ',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
+                    AppSvg.icEth(size: 40),
                     const SizedBox(width: 12),
                     const Text(
                       'ETH',
@@ -176,8 +162,8 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                       ),
                     ),
                     const Spacer(),
-                    const Text(
-                      '\$0.000000',
+                    Text(
+                      '${widget.amount}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -202,7 +188,9 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   hintText: '0.0',
                   hintStyle: TextStyle(color: Colors.grey[400]),
@@ -246,20 +234,10 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     horizontal: 20,
                     vertical: 16,
                   ),
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.content_paste, size: 20),
-                        onPressed: _pasteFromClipboard,
-                        color: Colors.grey[600],
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.qr_code_scanner, size: 20),
-                        onPressed: _scanQRCode,
-                        color: Colors.grey[600],
-                      ),
-                    ],
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.content_paste, size: 20),
+                    onPressed: _pasteFromClipboard,
+                    color: Colors.grey[600],
                   ),
                 ),
               ),
@@ -280,22 +258,25 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                          : const Text(
+                            'Continue',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        )
-                      : const Text(
-                          'Continue',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                 ),
               ),
               const SizedBox(height: 24),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:privy_flutter/privy_flutter.dart';
 import 'package:privyio/app_assets.dart';
 import 'package:privyio/data/model/transaction_models.dart' as api_models;
+import 'package:privyio/data/model/user_models.dart' show WalletBalance;
 import 'package:privyio/data/repositories/api_repo.dart';
 import 'package:privyio/data/repositories/app_storage.dart';
 import 'package:privyio/home_privy/home_privy_screen.dart';
@@ -27,8 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _privyManager = privyManager;
   PrivyUser? _currentUser;
   List<api_models.Transaction> _transactions = [];
-  bool _isLoadingTransactions = true;
   double _totalBalance = 0;
+  WalletBalance? ethWallet;
 
   @override
   void initState() {
@@ -45,8 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final res = await ApiRepo.to.login(value);
           if (res.data.accessToken.isNotEmpty) {
             AppStorage().setString(SKeys.token, res.data.accessToken);
-            _fetchBalance();
-            _fetchUserTransactions();
+            _fetchData();
           }
         },
         onFailure: (error) {
@@ -58,8 +58,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  _fetchData() async {
+    _fetchBalance();
+    _fetchUserTransactions();
+  }
+
   _fetchBalance() async {
-    final res = await ApiRepo.to.getWalletBalance(
+    ethWallet = await ApiRepo.to.getWalletBalance(
       walletId: _currentUser!.embeddedEthereumWallets.first.id!,
       asset: 'eth',
       chain: 'sepolia',
@@ -71,21 +76,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     setState(() {
       _totalBalance =
-          _doubleOf(res.data!.balances!.first.displayValues!.usd) +
+          _doubleOf(ethWallet?.data!.balances!.first.displayValues!.usd) +
           _doubleOf(res2.data!.balances!.first.displayValues!.usd);
     });
   }
 
   _doubleOf(String? value) {
-    return double.tryParse(value!) ?? 0;
+    return double.tryParse(value ?? '0') ?? 0;
   }
 
   _fetchUserTransactions() async {
     try {
-      setState(() {
-        _isLoadingTransactions = true;
-      });
-
       final res = await ApiRepo.to.getTransactionsFromPrivy(
         walletId: _currentUser!.embeddedEthereumWallets.first.id!,
         asset: 'eth',
@@ -95,18 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
       if (res.data != null && res.data!.transactions != null) {
         setState(() {
           _transactions = res.data!.transactions!;
-          _isLoadingTransactions = false;
-        });
-      } else {
-        setState(() {
-          _isLoadingTransactions = false;
         });
       }
     } catch (e) {
       print('Error fetching transactions: $e');
-      setState(() {
-        _isLoadingTransactions = false;
-      });
     }
   }
 
@@ -145,22 +138,26 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _navigateToWithdraw() {
+  void _navigateToWithdraw() async {
     if (_currentUser == null) return;
 
     if (_currentUser!.embeddedEthereumWallets.isEmpty) {
       return;
     }
 
-    Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (context) => WithdrawScreen(
               ethereumWallet: _currentUser!.embeddedEthereumWallets.first,
+              amount: _doubleOf(
+                ethWallet?.data!.balances!.first.displayValues!.eth,
+              ),
             ),
       ),
     );
+    _fetchData();
   }
 
   void _navigateToSwap() {
@@ -363,14 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
-          if (_isLoadingTransactions)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: CircularProgressIndicator(),
-              ),
-            )
-          else if (_transactions.isEmpty)
+          if (_transactions.isEmpty)
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(20.0),
@@ -533,26 +523,30 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (_currentUser != null) ...[
-                      // Total Balance Card
-                      _buildBalanceCard(),
-                      const SizedBox(height: 16),
+              child: RefreshIndicator(
+                onRefresh: () => Future.sync(() => _fetchData()),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (_currentUser != null) ...[
+                        // Total Balance Card
+                        _buildBalanceCard(),
+                        const SizedBox(height: 16),
 
-                      // Deposit First Token Card
-                      _buildDepositCard(),
-                      const SizedBox(height: 16),
+                        // Deposit First Token Card
+                        _buildDepositCard(),
+                        const SizedBox(height: 16),
 
-                      // Transaction History
-                      _buildTransactionHistory(),
-                    ] else ...[
-                      const Center(child: CircularProgressIndicator()),
+                        // Transaction History
+                        _buildTransactionHistory(),
+                      ] else ...[
+                        const Center(child: CircularProgressIndicator()),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
