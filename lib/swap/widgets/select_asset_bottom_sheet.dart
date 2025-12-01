@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/asset.dart';
+import '../../data/model/asset.dart';
 
 class SelectAssetBottomSheet extends StatelessWidget {
   final List<Asset> assets;

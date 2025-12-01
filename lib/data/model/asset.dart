@@ -6,6 +6,7 @@ class Asset {
   final String balance;
   final Widget icon;
   final Widget iconLarge;
+  final String address;
 
   const Asset({
     required this.name,
@@ -13,5 +14,6 @@ class Asset {
     required this.balance,
     required this.icon,
     required this.iconLarge,
+    required this.address,
   });
 }

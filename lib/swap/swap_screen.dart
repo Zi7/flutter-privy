@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_assets.dart';
-import 'models/asset.dart';
-import 'widgets/select_asset_bottom_sheet.dart';
+import '../data/model/asset.dart';
 
 class SwapScreen extends StatefulWidget {
   const SwapScreen({super.key});
@@ -23,6 +22,7 @@ class _SwapScreenState extends State<SwapScreen> {
       balance: '1.8333',
       icon: AppSvg.icBtc(size: 24),
       iconLarge: AppSvg.icBtc(size: 40),
+      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
     ),
     Asset(
       name: 'Ethereum',
@@ -30,6 +30,7 @@ class _SwapScreenState extends State<SwapScreen> {
       balance: '2.76',
       icon: AppSvg.icEth(size: 24),
       iconLarge: AppSvg.icEth(size: 40),
+      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
     ),
     Asset(
       name: 'USDT',
@@ -37,6 +38,7 @@ class _SwapScreenState extends State<SwapScreen> {
       balance: '2002',
       icon: AppSvg.icUsdt(size: 24),
       iconLarge: AppSvg.icUsdt(size: 40),
+      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
     ),
     Asset(
       name: 'USDC',
@@ -44,6 +46,7 @@ class _SwapScreenState extends State<SwapScreen> {
       balance: '10002',
       icon: AppSvg.icUsdc(size: 24),
       iconLarge: AppSvg.icUsdc(size: 40),
+      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
     ),
     Asset(
       name: 'Solana',
@@ -51,6 +54,15 @@ class _SwapScreenState extends State<SwapScreen> {
       balance: '139.13',
       icon: AppSvg.icSol(size: 24), // Placeholder
       iconLarge: AppSvg.icSol(size: 40),
+      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
+    ),
+    Asset(
+      name: 'Binance',
+      symbol: 'BNB',
+      balance: '139.13',
+      icon: AppSvg.icBsc(size: 24), // Placeholder
+      iconLarge: AppSvg.icBsc(size: 40),
+      address: '0xae13d989dac2f0debff460ac112a837c89baa7cd',
     ),
   ];
 
@@ -59,7 +71,11 @@ class _SwapScreenState extends State<SwapScreen> {
     super.initState();
     // Set default from asset to SOL
     _fromAsset = _availableAssets.firstWhere(
-      (asset) => asset.symbol == 'SOL',
+      (asset) => asset.symbol == 'BNB',
+      orElse: () => _availableAssets.first,
+    );
+    _toAsset = _availableAssets.firstWhere(
+      (asset) => asset.symbol == 'USDC',
       orElse: () => _availableAssets.first,
     );
   }
@@ -71,19 +87,19 @@ class _SwapScreenState extends State<SwapScreen> {
   }
 
   void _showAssetSelector({required bool isFromAsset}) {
-    SelectAssetBottomSheet.show(
-      context,
-      assets: _availableAssets,
-      onAssetSelected: (asset) {
-        setState(() {
-          if (isFromAsset) {
-            _fromAsset = asset;
-          } else {
-            _toAsset = asset;
-          }
-        });
-      },
-    );
+    // SelectAssetBottomSheet.show(
+    //   context,
+    //   assets: _availableAssets,
+    //   onAssetSelected: (asset) {
+    //     setState(() {
+    //       if (isFromAsset) {
+    //         _fromAsset = asset;
+    //       } else {
+    //         _toAsset = asset;
+    //       }
+    //     });
+    //   },
+    // );
   }
 
   @override
@@ -125,17 +141,20 @@ class _SwapScreenState extends State<SwapScreen> {
                 ),
                 const SizedBox(width: 8),
                 // Arrow icon
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward,
-                    color: Colors.black,
-                    size: 20,
+                GestureDetector(
+                  onTap: _swapToken,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Icon(
+                      Icons.swap_horizontal_circle,
+                      color: Colors.black,
+                      size: 25,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -153,15 +172,15 @@ class _SwapScreenState extends State<SwapScreen> {
           const SizedBox(height: 40),
           // Amount input
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (_fromAsset != null) _fromAsset!.iconLarge,
-                const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
                     controller: _amountController,
+                    textAlign: TextAlign.center,
                     keyboardType: TextInputType.none,
                     style: const TextStyle(
                       fontSize: 40,
@@ -169,19 +188,14 @@ class _SwapScreenState extends State<SwapScreen> {
                       height: 1.0,
                     ),
                     decoration: const InputDecoration(
-                      hintText: '0.0000000',
+                      hintText: '0.00000',
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
                       isDense: true,
                     ),
                   ),
                 ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.swap_vertical_circle_outlined,
-                  color: Colors.black,
-                  size: 32,
-                ),
+                const SizedBox(width: 40),
               ],
             ),
           ),
@@ -282,8 +296,8 @@ class _SwapScreenState extends State<SwapScreen> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-            const SizedBox(width: 4),
-            const Icon(Icons.keyboard_arrow_down, size: 16),
+            // const SizedBox(width: 4),
+            // const Icon(Icons.keyboard_arrow_down, size: 16),
           ],
         ),
       ),
@@ -336,7 +350,7 @@ class _SwapScreenState extends State<SwapScreen> {
           ),
           Row(
             children: [
-              _buildNumpadKey(','),
+              _buildNumpadKey('.'),
               _buildNumpadKey('0'),
               _buildNumpadKey('⌫', isBackspace: true),
             ],
@@ -382,5 +396,13 @@ class _SwapScreenState extends State<SwapScreen> {
         ),
       ),
     );
+  }
+
+  void _swapToken() {
+    final temp = _fromAsset;
+    _fromAsset = _toAsset;
+    _toAsset = temp;
+    _amountController.clear();
+    setState(() {});
   }
 }

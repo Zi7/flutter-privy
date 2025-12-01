@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:privyio/data/model/auth_models.dart';
 import 'package:privyio/data/model/base_response.dart';
 import 'package:privyio/data/model/currency_models.dart';
+import 'package:privyio/data/model/estimate_swap.dart';
+import 'package:privyio/data/model/swap_model.dart';
 import 'package:privyio/data/model/transaction_models.dart';
 import 'package:privyio/data/model/user_models.dart';
 
@@ -70,12 +72,6 @@ final class ApiRepo extends BaseRepository {
 
   /// Get transactions from Privy API
   /// GET /api/privy/transactions/from-privy
-  ///
-  /// Parameters:
-  /// - [walletId]: Privy wallet ID
-  /// - [asset]: Asset to query (usdc, eth, pol, usdt, sol)
-  /// - [chain]: Chain to query
-  /// - [limit]: Maximum number of transactions to return (default: 50)
   Future<PrivyTransactionsResponse> getTransactionsFromPrivy({
     required String walletId,
     required String asset,
@@ -93,36 +89,6 @@ final class ApiRepo extends BaseRepository {
     );
     return PrivyTransactionsResponse.fromJson(res.body);
   }
-
-  // Future<UserTransactionsResponse> getUserTransactions({
-  //   int perPage = 50,
-  //   int page = 1,
-  //   String? startDate,
-  //   String? endDate,
-  //   String? search,
-  //   String? privyWalletId,
-  //   String? type,
-  //   String? chain,
-  //   String? asset,
-  //   int? limit,
-  // }) async {
-  //   final query = <String, dynamic>{
-  //     'perPage': perPage.toString(),
-  //     'page': page.toString(),
-  //   };
-
-  //   if (startDate != null) query['startDate'] = startDate;
-  //   if (endDate != null) query['endDate'] = endDate;
-  //   if (search != null) query['search'] = search;
-  //   if (privyWalletId != null) query['privyWalletId'] = privyWalletId;
-  //   if (type != null) query['type'] = type;
-  //   if (chain != null) query['chain'] = chain;
-  //   if (asset != null) query['asset'] = asset;
-  //   if (limit != null) query['limit'] = limit.toString();
-
-  //   final res = await get(Endpoints.getUserTransactions, query: query);
-  //   return UserTransactionsResponse.fromJson(res.body);
-  // }
 
   /// Get transaction by ID
   /// GET /api/privy/transactions/:id
@@ -159,6 +125,22 @@ final class ApiRepo extends BaseRepository {
       Endpoints.getAllCategories,
       query: {'qrcode': storeCode},
     );
+    return BaseResponse.fromJson(res.body);
+  }
+
+  // ==================== Swap ====================
+
+  /// Estimate swap
+  /// POST /api/privy/transactions/estimate-swap
+  Future<BaseResponse> estimateSwap(EstimateSwap request) async {
+    final res = await post(Endpoints.estimateSwap, request.toJson());
+    return BaseResponse.fromJson(res.body);
+  }
+
+  /// Swap
+  /// POST /api/privy/transactions/swap
+  Future<BaseResponse> swap(SwapModel request) async {
+    final res = await post(Endpoints.swap, request.toJson());
     return BaseResponse.fromJson(res.body);
   }
 }
