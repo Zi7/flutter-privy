@@ -72,7 +72,7 @@ final class NumberUtil {
         }
         return '${s}0';
       } else {
-        return '$s.00';
+        return s;
       }
     } else {
       var f = NumberFormat("###,###.######", "en_US");

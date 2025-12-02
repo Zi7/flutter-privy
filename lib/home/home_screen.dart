@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:privy_flutter/privy_flutter.dart';
 import 'package:privyio/app_assets.dart';
-import 'package:privyio/data/model/transaction_models.dart' as api_models;
-import 'package:privyio/data/model/user_models.dart' show WalletBalance;
+import 'package:privyio/data/model/transaction.dart';
+import 'package:privyio/data/model/user_profile.dart';
+import 'package:privyio/data/model/wallet_balance.dart';
 import 'package:privyio/data/repositories/api_repo.dart';
 import 'package:privyio/data/repositories/app_storage.dart';
 import 'package:privyio/home_privy/home_privy_screen.dart';
@@ -12,8 +14,6 @@ import '../deposit/deposit_screen.dart';
 import '../privy_manager.dart';
 import '../swap/swap_screen.dart';
 import '../withdraw/withdraw_screen.dart';
-import 'models/transaction.dart';
-import 'widgets/transaction_detail_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   final PrivyUser user;
@@ -26,21 +26,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _privyManager = privyManager;
-  PrivyUser? _currentUser;
-  List<api_models.Transaction> _transactions = [];
-  double _totalBalance = 0;
-  WalletBalance? ethWallet;
+  Transaction? _transaction;
+  double? _totalBalance;
+  WalletBalance? walletBalance;
+  UserProfile? userProfile;
 
   @override
   void initState() {
     super.initState();
-    _currentUser = widget.user;
     _loginApex();
   }
 
   _loginApex() async {
     try {
-      final result = await _currentUser!.getAccessToken();
+      final result = await widget.user.getAccessToken();
       result.fold(
         onSuccess: (value) async {
           final res = await ApiRepo.to.login(value);
@@ -59,45 +58,40 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _fetchData() async {
+    userProfile = await ApiRepo.to.getUserProfile();
+    setState(() {});
     _fetchBalance();
     _fetchUserTransactions();
   }
 
   _fetchBalance() async {
-    ethWallet = await ApiRepo.to.getWalletBalance(
-      walletId: _currentUser!.embeddedEthereumWallets.first.id!,
-      asset: 'eth',
-      chain: 'sepolia',
-    );
-    final res2 = await ApiRepo.to.getWalletBalance(
-      walletId: _currentUser!.embeddedSolanaWallets.first.id!,
-      asset: 'sol',
-      chain: 'solana_devnet',
+    walletBalance = await ApiRepo.to.getBalance(
+      userProfile!.data!.smartWallets!.first.address!,
     );
     setState(() {
-      _totalBalance =
-          _doubleOf(ethWallet?.data!.balances!.first.displayValues!.usd) +
-          _doubleOf(res2.data!.balances!.first.displayValues!.usd);
+      _totalBalance = double.parse(
+        walletBalance!.data!.native!.balanceFormatted ?? '0',
+      );
     });
-  }
-
-  _doubleOf(String? value) {
-    return double.tryParse(value ?? '0') ?? 0;
   }
 
   _fetchUserTransactions() async {
     try {
-      final res = await ApiRepo.to.getTransactionsFromPrivy(
-        walletId: _currentUser!.embeddedEthereumWallets.first.id!,
-        asset: 'eth',
-        chain: 'sepolia',
-      );
+      // ApiRepo.to.getTransactions(
+      //   userProfile!.data!.smartWallets!.first.address!,
+      // );
+      // ApiRepo.to.getTokenTransfers(
+      //   userProfile!.data!.smartWallets!.first.address!,
+      // );
+      // ApiRepo.to.getInternalTransactions(
+      //   userProfile!.data!.smartWallets!.first.address!,
+      // );
 
-      if (res.data != null && res.data!.transactions != null) {
-        setState(() {
-          _transactions = res.data!.transactions!;
-        });
-      }
+      // if (res.data != null && res.data!.transactions != null) {
+      //   setState(() {
+      //     _transactions = res.data!.transactions!;
+      //   });
+      // }
     } catch (e) {
       print('Error fetching transactions: $e');
     }
@@ -106,54 +100,32 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToSettings() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => HomePrivyScreen(user: _currentUser!),
+        builder: (context) => HomePrivyScreen(user: widget.user),
       ),
     );
   }
 
   void _navigateToDeposit() {
-    if (_currentUser == null) return;
-
-    // Get first wallet of each type if available
-    EmbeddedEthereumWallet? ethWallet;
-    EmbeddedSolanaWallet? solWallet;
-
-    if (_currentUser!.embeddedEthereumWallets.isNotEmpty) {
-      ethWallet = _currentUser!.embeddedEthereumWallets.first;
-    }
-
-    if (_currentUser!.embeddedSolanaWallets.isNotEmpty) {
-      solWallet = _currentUser!.embeddedSolanaWallets.first;
-    }
-
     Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (context) => DepositScreen(
-              ethereumWallet: ethWallet,
-              solanaWallet: solWallet,
+              address: userProfile!.data!.smartWallets!.first.address!,
             ),
       ),
     );
   }
 
   void _navigateToWithdraw() async {
-    if (_currentUser == null) return;
-
-    if (_currentUser!.embeddedEthereumWallets.isEmpty) {
-      return;
-    }
-
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (context) => WithdrawScreen(
-              ethereumWallet: _currentUser!.embeddedEthereumWallets.first,
-              amount: _doubleOf(
-                ethWallet?.data!.balances!.first.displayValues!.eth,
-              ),
+              id: userProfile!.data!.smartWallets!.first.id!,
+              amount: walletBalance!.data!.native!.balanceFormatted ?? '0',
+              ethereumWallet: widget.user.embeddedEthereumWallets.first,
             ),
       ),
     );
@@ -163,7 +135,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToSwap() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const SwapScreen()),
+      MaterialPageRoute(
+        builder:
+            (context) => SwapScreen(
+              ethereumWallet: widget.user.embeddedEthereumWallets.first,
+            ),
+      ),
     );
   }
 
@@ -205,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '\$${_totalBalance.formatDouble()}',
+            '\$${(_totalBalance ?? 0).formatDouble()}',
             style: TextStyle(
               fontSize: 40,
               fontWeight: FontWeight.w600,
@@ -360,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
-          if (_transactions.isEmpty)
+          if (_transaction == null)
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(20.0),
@@ -374,19 +351,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: _transactions.length,
+              itemCount: _transaction!.data!.result!.length,
               separatorBuilder: (context, index) => const Divider(height: 32),
               itemBuilder: (context, index) {
-                final transaction = _transactions[index];
-                final details = transaction.details;
-                final isReceived = details?.type == 'transfer_received';
+                final result = _transaction!.data!.result![index];
+                final isReceived = true;
 
                 return _buildTransactionItem(
                   type: isReceived ? 'Received' : 'Sent',
-                  amount: details?.displayValues?.eth ?? '0',
-                  subAmount: details?.rawValue ?? '0',
+                  amount: result.value!,
+                  subAmount: result.value!,
                   isPositive: isReceived,
-                  transaction: transaction,
                 );
               },
             ),
@@ -400,10 +375,9 @@ class _HomeScreenState extends State<HomeScreen> {
     required String amount,
     required String subAmount,
     required bool isPositive,
-    api_models.Transaction? transaction,
   }) {
-    final assetName = transaction?.details?.asset?.toUpperCase() ?? 'ETH';
-    final status = transaction?.status ?? 'completed';
+    final assetName = 'ETH';
+    final status = 'completed';
 
     return GestureDetector(
       onTap:
@@ -412,7 +386,6 @@ class _HomeScreenState extends State<HomeScreen> {
             amount: amount,
             subAmount: subAmount,
             isPositive: isPositive,
-            transaction: transaction,
           ),
       behavior: HitTestBehavior.opaque,
       child: Row(
@@ -483,36 +456,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required String amount,
     required String subAmount,
     required bool isPositive,
-    api_models.Transaction? transaction,
   }) {
-    final assetName = transaction?.details?.asset?.toUpperCase() ?? 'ETH';
-
-    final localTransaction = Transaction(
-      type: type,
-      amount: amount,
-      subAmount: subAmount,
-      isPositive: isPositive,
-      assetName: assetName,
-      assetSymbol: assetName,
-      fromTo:
-          isPositive
-              ? (transaction?.details?.sender ?? 'Unknown')
-              : (transaction?.details?.recipient ?? 'Unknown'),
-      blockchainFees: 'Network fees',
-      network: transaction?.details?.chain ?? 'Sepolia',
-      date:
-          transaction?.createdAt != null
-              ? DateTime.fromMillisecondsSinceEpoch(
-                transaction!.createdAt!,
-              ).toString().replaceAll('.000', '')
-              : 'Unknown',
-      status: transaction?.status ?? 'completed',
-      statusDescription:
-          '${isPositive ? 'Received' : 'Sent'} $amount $assetName',
-      url: 'https://sepolia.etherscan.io/tx/${transaction?.transactionHash}',
-    );
-
-    TransactionDetailBottomSheet.show(context, transaction: localTransaction);
+    // TransactionDetailBottomSheet.show(context, transaction: localTransaction);
   }
 
   @override
@@ -528,25 +473,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (_currentUser != null) ...[
-                        // Total Balance Card
-                        _buildBalanceCard(),
-                        const SizedBox(height: 16),
+                  child:
+                      _totalBalance != null
+                          ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Total Balance Card
+                              _buildBalanceCard(),
+                              const SizedBox(height: 16),
 
-                        // Deposit First Token Card
-                        _buildDepositCard(),
-                        const SizedBox(height: 16),
+                              // Deposit First Token Card
+                              _buildDepositCard(),
+                              const SizedBox(height: 16),
 
-                        // Transaction History
-                        _buildTransactionHistory(),
-                      ] else ...[
-                        const Center(child: CircularProgressIndicator()),
-                      ],
-                    ],
-                  ),
+                              // Transaction History
+                              _buildTransactionHistory(),
+                            ],
+                          )
+                          : const Center(
+                            child: CircularProgressIndicator(),
+                          ).paddingOnly(top: 300),
                 ),
               ),
             ),

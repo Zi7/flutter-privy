@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:privy_flutter/privy_flutter.dart';
+import 'package:privyio/data/model/prepare_swap.dart';
+import 'package:privyio/data/repositories/api_repo.dart';
+import 'package:privyio/utils/number_util.dart';
 
 import '../app_assets.dart';
 import '../data/model/asset.dart';
 
 class SwapScreen extends StatefulWidget {
-  const SwapScreen({super.key});
+  final EmbeddedEthereumWallet ethereumWallet;
+
+  const SwapScreen({super.key, required this.ethereumWallet});
 
   @override
   State<SwapScreen> createState() => _SwapScreenState();
@@ -14,69 +20,27 @@ class _SwapScreenState extends State<SwapScreen> {
   final TextEditingController _amountController = TextEditingController();
   Asset? _fromAsset;
   Asset? _toAsset;
-
-  final List<Asset> _availableAssets = [
-    Asset(
-      name: 'Bitcoin',
-      symbol: 'BTC',
-      balance: '1.8333',
-      icon: AppSvg.icBtc(size: 24),
-      iconLarge: AppSvg.icBtc(size: 40),
-      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
-    ),
-    Asset(
-      name: 'Ethereum',
-      symbol: 'ETH',
-      balance: '2.76',
-      icon: AppSvg.icEth(size: 24),
-      iconLarge: AppSvg.icEth(size: 40),
-      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
-    ),
-    Asset(
-      name: 'USDT',
-      symbol: 'USDT',
-      balance: '2002',
-      icon: AppSvg.icUsdt(size: 24),
-      iconLarge: AppSvg.icUsdt(size: 40),
-      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
-    ),
-    Asset(
-      name: 'USDC',
-      symbol: 'USDC',
-      balance: '10002',
-      icon: AppSvg.icUsdc(size: 24),
-      iconLarge: AppSvg.icUsdc(size: 40),
-      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
-    ),
-    Asset(
-      name: 'Solana',
-      symbol: 'SOL',
-      balance: '139.13',
-      icon: AppSvg.icSol(size: 24), // Placeholder
-      iconLarge: AppSvg.icSol(size: 40),
-      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
-    ),
-    Asset(
-      name: 'Binance',
-      symbol: 'BNB',
-      balance: '139.13',
-      icon: AppSvg.icBsc(size: 24), // Placeholder
-      iconLarge: AppSvg.icBsc(size: 40),
-      address: '0xae13d989dac2f0debff460ac112a837c89baa7cd',
-    ),
-  ];
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     // Set default from asset to SOL
-    _fromAsset = _availableAssets.firstWhere(
-      (asset) => asset.symbol == 'BNB',
-      orElse: () => _availableAssets.first,
+    _fromAsset = Asset(
+      name: 'USDC',
+      symbol: 'USDC',
+      balance: 10002,
+      icon: AppSvg.icUsdc(size: 24),
+      iconLarge: AppSvg.icUsdc(size: 40),
+      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
     );
-    _toAsset = _availableAssets.firstWhere(
-      (asset) => asset.symbol == 'USDC',
-      orElse: () => _availableAssets.first,
+    _toAsset = Asset(
+      name: 'Binance',
+      symbol: 'BNB',
+      balance: 139.13,
+      icon: AppSvg.icBsc(size: 24), // Placeholder
+      iconLarge: AppSvg.icBsc(size: 40),
+      address: '0xae13d989dac2f0debff460ac112a837c89baa7cd',
     );
   }
 
@@ -142,7 +106,7 @@ class _SwapScreenState extends State<SwapScreen> {
                 const SizedBox(width: 8),
                 // Arrow icon
                 GestureDetector(
-                  onTap: _swapToken,
+                  onTap: _switchToken,
                   child: Container(
                     width: 40,
                     height: 40,
@@ -199,14 +163,11 @@ class _SwapScreenState extends State<SwapScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
-          // USD value
-          const Text('\$0', style: TextStyle(fontSize: 20, color: Colors.grey)),
           const SizedBox(height: 16),
           // Current balance
           if (_fromAsset != null)
             Text(
-              'Current Balance: ${_fromAsset!.symbol} 0',
+              'Current Balance: ${_fromAsset!.symbol} ${_fromAsset!.balance.formatDouble()}',
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
           const Spacer(),
@@ -217,23 +178,33 @@ class _SwapScreenState extends State<SwapScreen> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  // Handle continue
-                },
+                onPressed: _isLoading ? null : _swapToken,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(28),
                   ),
                 ),
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                        : const Text(
+                          'Continue',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
               ),
             ),
           ),
@@ -398,11 +369,82 @@ class _SwapScreenState extends State<SwapScreen> {
     );
   }
 
-  void _swapToken() {
+  void _switchToken() {
     final temp = _fromAsset;
     _fromAsset = _toAsset;
     _toAsset = temp;
     _amountController.clear();
     setState(() {});
+  }
+
+  void _swapToken() async {
+    if (_amountController.text.isEmpty) {
+      _showMessage("Amount is required", isError: true);
+      return;
+    }
+    if (double.parse(_amountController.text) > _fromAsset!.balance) {
+      _showMessage("Insufficient balance", isError: true);
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+    });
+    final res = await ApiRepo.to.prepareSwap(
+      PrepareSwap(
+        fromToken: _fromAsset!.address,
+        toToken: _toAsset!.address,
+        amount: double.parse(_amountController.text),
+      ),
+    );
+    if (res.message == "success") {
+      _secp256k1Sign(res.data!.dataHash!, res.data!.sessionToSubmit!);
+    } else {
+      _showMessage(res.message ?? "Swap failed", isError: true);
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _secp256k1Sign(String dataHash, String sessionId) async {
+    try {
+      final request = EthereumRpcRequest.secp256k1Sign(dataHash);
+      final result = await widget.ethereumWallet.provider.request(request);
+
+      result.fold(
+        onSuccess: (response) async {
+          final signature = response.data.toString();
+          final res = await ApiRepo.to.swap(sessionId, signature);
+          setState(() {
+            _isLoading = false;
+          });
+          if (res.message == "success") {
+            _showMessage("Swap successful");
+            Navigator.pop(context);
+          } else {
+            _showMessage(res.message, isError: true);
+          }
+        },
+        onFailure: (error) {
+          _showMessage(
+            "Secp256k1 sign failed: ${error.message}",
+            isError: true,
+          );
+        },
+      );
+    } catch (e) {
+      _showMessage("Secp256k1 sign error: $e", isError: true);
+    }
+  }
+
+  void _showMessage(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }

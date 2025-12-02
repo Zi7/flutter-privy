@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class Asset {
   final String name;
   final String symbol;
-  final String balance;
+  final double balance;
   final Widget icon;
   final Widget iconLarge;
   final String address;

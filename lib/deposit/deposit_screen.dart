@@ -1,39 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:privy_flutter/privy_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class DepositScreen extends StatefulWidget {
-  final EmbeddedEthereumWallet? ethereumWallet;
-  final EmbeddedSolanaWallet? solanaWallet;
+  final String address;
 
-  const DepositScreen({super.key, this.ethereumWallet, this.solanaWallet});
+  const DepositScreen({super.key, required this.address});
 
   @override
   State<DepositScreen> createState() => _DepositScreenState();
 }
 
 class _DepositScreenState extends State<DepositScreen> {
-  String _selectedNetwork = 'Solana';
-
-  @override
-  void initState() {
-    super.initState();
-    // Set default network based on available wallets
-    if (widget.solanaWallet != null) {
-      _selectedNetwork = 'Solana';
-    } else if (widget.ethereumWallet != null) {
-      _selectedNetwork = 'EVM';
-    }
-  }
-
   String get _currentAddress {
-    if (_selectedNetwork == 'Solana' && widget.solanaWallet != null) {
-      return widget.solanaWallet!.address;
-    } else if (_selectedNetwork == 'EVM' && widget.ethereumWallet != null) {
-      return widget.ethereumWallet!.address;
-    }
-    return '';
+    return widget.address;
   }
 
   void _copyAddress() {
@@ -101,58 +81,35 @@ class _DepositScreenState extends State<DepositScreen> {
   }
 
   Widget _buildNetworkSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (widget.solanaWallet != null)
-          _buildNetworkChip('Solana', Icons.circle),
-        if (widget.solanaWallet != null && widget.ethereumWallet != null)
-          const SizedBox(width: 12),
-        if (widget.ethereumWallet != null)
-          _buildNetworkChip('EVM', Icons.hexagon),
-      ],
-    );
+    return _buildNetworkChip('EVM', Icons.hexagon);
   }
 
   Widget _buildNetworkChip(String network, IconData icon) {
-    final isSelected = _selectedNetwork == network;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedNetwork = network;
-        });
-      },
+    return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.grey[200],
+          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          boxShadow:
-              isSelected
-                  ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                  : [],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: isSelected ? Colors.black : Colors.grey[600],
-            ),
+            Icon(icon, size: 20, color: Colors.black),
             const SizedBox(width: 8),
             Text(
               network,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.black : Colors.grey[600],
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
               ),
             ),
           ],

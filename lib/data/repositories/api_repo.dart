@@ -1,11 +1,12 @@
 import 'package:get/get.dart';
 import 'package:privyio/data/model/auth_models.dart';
 import 'package:privyio/data/model/base_response.dart';
-import 'package:privyio/data/model/currency_models.dart';
-import 'package:privyio/data/model/estimate_swap.dart';
-import 'package:privyio/data/model/swap_model.dart';
-import 'package:privyio/data/model/transaction_models.dart';
-import 'package:privyio/data/model/user_models.dart';
+import 'package:privyio/data/model/create_tx_request.dart';
+import 'package:privyio/data/model/create_tx_response.dart';
+import 'package:privyio/data/model/prepare_swap.dart';
+import 'package:privyio/data/model/user_profile.dart';
+import 'package:privyio/data/model/wallet_balance.dart';
+import 'package:privyio/utils/log.dart';
 
 import 'base_repository.dart';
 import 'endpoints.dart';
@@ -40,107 +41,77 @@ final class ApiRepo extends BaseRepository {
     return UserProfile.fromJson(res.body);
   }
 
-  // ==================== Privy User ====================
+  // ==================== Smart Wallet Transaction ====================
 
-  /// Get all linked Privy accounts
-  /// GET /api/privy/users
-  Future<List<PrivyUser>> getPrivyUsers() async {
-    final res = await get(Endpoints.getPrivyUsers);
-    return (res.body as List).map((e) => PrivyUser.fromJson(e)).toList();
-  }
-
-  /// Get wallet balance
-  /// GET /api/privy/users/balance
-  ///
-  /// Parameters:
-  /// - [walletId]: Privy wallet ID
-  /// - [asset]: Asset to query balance for (usdc, eth, pol, usdt, sol)
-  /// - [chain]: Chain to query balance on
-  Future<WalletBalance> getWalletBalance({
-    required String walletId,
-    required String asset,
-    required String chain,
-  }) async {
-    final res = await get(
-      Endpoints.getWalletBalance,
-      query: {'walletId': walletId, 'asset': asset, 'chain': chain},
-    );
-    return WalletBalance.fromJson(res.body);
-  }
-
-  // ==================== Privy Transaction ====================
-
-  /// Get transactions from Privy API
-  /// GET /api/privy/transactions/from-privy
-  Future<PrivyTransactionsResponse> getTransactionsFromPrivy({
-    required String walletId,
-    required String asset,
-    required String chain,
-    int limit = 50,
-  }) async {
-    final res = await get(
-      Endpoints.getTransactionsFromPrivy,
-      query: {
-        'walletId': walletId,
-        'asset': asset,
-        'chain': chain,
-        'limit': limit.toString(),
-      },
-    );
-    return PrivyTransactionsResponse.fromJson(res.body);
-  }
-
-  /// Get transaction by ID
-  /// GET /api/privy/transactions/:id
-  Future<BaseResponse> getTransactionById(String transactionId) async {
-    final res = await get(Endpoints.getTransactionById(transactionId));
+  /// Get transactions
+  /// GET /api/explorer/transactions
+  Future<BaseResponse> getTransactions(String address) async {
+    final queries = {'network': 'sepolia', 'address': address};
+    final res = await get(Endpoints.getTransactions, query: queries);
     return BaseResponse.fromJson(res.body);
   }
 
-  // ==================== Currency ====================
-
-  /// Get all currencies
-  /// GET /api/currency/currencies
-  Future<List<Currency>> getAllCurrencies() async {
-    final res = await get(Endpoints.getAllCurrencies);
-    return (res.body as List).map((e) => Currency.fromJson(e)).toList();
+  /// Get token transfers
+  /// GET /api/explorer/token-transfers
+  Future<BaseResponse> getTokenTransfers(String address) async {
+    final queries = {'network': 'sepolia', 'address': address};
+    final res = await get(Endpoints.getTokenTransfers, query: queries);
+    return BaseResponse.fromJson(res.body);
   }
 
-  /// Get currency by symbol
-  /// GET /api/currency/currencies/:symbol
-  ///
-  /// Parameters:
-  /// - [symbol]: Currency symbol (e.g., ETH, USDC)
-  Future<Currency> getCurrencyBySymbol(String symbol) async {
-    final res = await get(Endpoints.getCurrencyBySymbol(symbol));
-    return Currency.fromJson(res.body);
-  }
-
-  // ==================== Legacy ====================
-
-  /// Get all categories (legacy endpoint)
-  /// GET /app/category
-  Future<BaseResponse> getAllCategories(String storeCode) async {
-    final res = await get(
-      Endpoints.getAllCategories,
-      query: {'qrcode': storeCode},
-    );
+  /// Get internal transactions
+  /// GET /api/explorer/internal-transactions
+  Future<BaseResponse> getInternalTransactions(String address) async {
+    final queries = {'network': 'sepolia', 'address': address};
+    final res = await get(Endpoints.getInternalTransactions, query: queries);
     return BaseResponse.fromJson(res.body);
   }
 
   // ==================== Swap ====================
 
   /// Estimate swap
-  /// POST /api/privy/transactions/estimate-swap
-  Future<BaseResponse> estimateSwap(EstimateSwap request) async {
+  /// POST /api/swap/estimate
+  Future<BaseResponse> estimateSwap(PrepareSwap request) async {
     final res = await post(Endpoints.estimateSwap, request.toJson());
     return BaseResponse.fromJson(res.body);
   }
 
+  /// Prepare swap
+  /// POST /api/swap/prepare
+  Future<CreateTxResponse> prepareSwap(PrepareSwap request) async {
+    Log.i(request.toRawJson());
+    final res = await post(Endpoints.prepareSwap, request.toJson());
+    return CreateTxResponse.fromJson(res.body);
+  }
+
   /// Swap
-  /// POST /api/privy/transactions/swap
-  Future<BaseResponse> swap(SwapModel request) async {
-    final res = await post(Endpoints.swap, request.toJson());
+  /// POST /api/swap/send
+  Future<BaseResponse> swap(String sessionId, String signature) async {
+    final body = {"sessionId": sessionId, "signature": signature};
+    final res = await post(Endpoints.swap, body);
     return BaseResponse.fromJson(res.body);
+  }
+
+  /// Create transaction
+  /// POST /api/smart-wallet/create-tx
+  Future<CreateTxResponse> createTx(CreateTxRequest request) async {
+    final res = await post(Endpoints.createTx, request.toJson());
+    return CreateTxResponse.fromJson(res.body);
+  }
+
+  /// Submit transaction
+  /// POST /api/smart-wallet/submit-tx
+  Future<BaseResponse> submitTx(String sessionId, String signature) async {
+    final body = {"sessionId": sessionId, "signature": signature};
+    final res = await post(Endpoints.submitTx, body);
+    return BaseResponse.fromJson(res.body);
+  }
+
+  /// Get balance
+  /// GET /api/explorer/balance
+  Future<WalletBalance> getBalance(String address) async {
+    final queries = {'address': address, 'network': 'sepolia'};
+    final res = await get(Endpoints.getBalance, query: queries);
+    return WalletBalance.fromJson(res.body);
   }
 }

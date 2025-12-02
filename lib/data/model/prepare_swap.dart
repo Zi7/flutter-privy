@@ -1,22 +1,22 @@
 import 'dart:convert';
 
-class EstimateSwap {
+class PrepareSwap {
   final String fromToken;
   final String toToken;
-  final int amount;
+  final double amount;
 
-  EstimateSwap({
+  PrepareSwap({
     required this.fromToken,
     required this.toToken,
     required this.amount,
   });
 
-  factory EstimateSwap.fromRawJson(String str) =>
-      EstimateSwap.fromJson(json.decode(str));
+  factory PrepareSwap.fromRawJson(String str) =>
+      PrepareSwap.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
-  factory EstimateSwap.fromJson(Map<String, dynamic> json) => EstimateSwap(
+  factory PrepareSwap.fromJson(Map<String, dynamic> json) => PrepareSwap(
     fromToken: json["fromToken"],
     toToken: json["toToken"],
     amount: json["amount"],
@@ -26,5 +26,7 @@ class EstimateSwap {
     "fromToken": fromToken,
     "toToken": toToken,
     "amount": amount,
+    "caip2Id": "eip155:97",
+    "slippage": 1,
   };
 }

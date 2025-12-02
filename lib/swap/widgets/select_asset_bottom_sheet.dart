@@ -73,7 +73,7 @@ class SelectAssetBottomSheet extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          asset.balance,
+                          asset.balance.toString(),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,

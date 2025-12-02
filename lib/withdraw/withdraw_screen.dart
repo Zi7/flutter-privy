@@ -1,18 +1,20 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:privy_flutter/privy_flutter.dart';
 import 'package:privyio/app_assets.dart';
+import 'package:privyio/data/model/create_tx_request.dart';
+import 'package:privyio/data/repositories/api_repo.dart';
 
 class WithdrawScreen extends StatefulWidget {
   final EmbeddedEthereumWallet ethereumWallet;
-  final double amount;
+  final int id;
+  final String amount;
 
   const WithdrawScreen({
     super.key,
-    required this.ethereumWallet,
     required this.amount,
+    required this.id,
+    required this.ethereumWallet,
   });
 
   @override
@@ -68,43 +70,58 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
     });
 
     try {
-      BigInt weiAmount = BigInt.parse(
-        (double.parse(amount) * 1e18).toStringAsFixed(0),
+      final res = await ApiRepo.to.createTx(
+        CreateTxRequest(
+          smartWalletId: widget.id,
+          amount: double.parse(amount),
+          chain: "sepolia",
+          recipientAddress: toAddress,
+        ),
       );
-      String weiHex = "0x${weiAmount.toRadixString(16)}";
-
-      final txPayload = {
-        "from": widget.ethereumWallet.address,
-        "to": toAddress,
-        "value": weiHex,
-        "chainId": "0xAA36A7",
-        "gasLimit": "0x5208",
-        "maxPriorityFeePerGas": "0x3B9ACA00",
-        "maxFeePerGas": "0x77359400",
-      };
-
-      final request = EthereumRpcRequest.ethSendTransaction(
-        jsonEncode(txPayload),
-      );
-      final result = await widget.ethereumWallet.provider.request(request);
-
-      result.fold(
-        onSuccess: (response) {
-          _showMessage("Transaction sent! Hash: ${response.data.toString()}");
-          _addressController.clear();
-          _amountController.clear();
-          Navigator.pop(context);
-        },
-        onFailure: (error) {
-          _showMessage("Transaction failed: ${error.message}", isError: true);
-        },
-      );
+      if (res.message == "success") {
+        _secp256k1Sign(res.data!.dataHash!, res.data!.sessionToSubmit!);
+      } else {
+        _showMessage(res.message ?? "Transaction failed", isError: true);
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      _showMessage("Transaction failed: $e", isError: true);
-    } finally {
       setState(() {
         _isLoading = false;
       });
+      _showMessage("Transaction failed: $e", isError: true);
+    }
+  }
+
+  Future<void> _secp256k1Sign(String dataHash, String sessionId) async {
+    try {
+      final request = EthereumRpcRequest.secp256k1Sign(dataHash);
+      final result = await widget.ethereumWallet.provider.request(request);
+
+      result.fold(
+        onSuccess: (response) async {
+          final signature = response.data.toString();
+          final res = await ApiRepo.to.submitTx(sessionId, signature);
+          setState(() {
+            _isLoading = false;
+          });
+          if (res.message == "success") {
+            _showMessage("Transaction successful");
+            Navigator.pop(context);
+          } else {
+            _showMessage(res.message, isError: true);
+          }
+        },
+        onFailure: (error) {
+          _showMessage(
+            "Secp256k1 sign failed: ${error.message}",
+            isError: true,
+          );
+        },
+      );
+    } catch (e) {
+      _showMessage("Secp256k1 sign error: $e", isError: true);
     }
   }
 

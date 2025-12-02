@@ -10,25 +10,19 @@ final class Endpoints {
   // Users
   static const String getUserProfile = '/users/me';
 
-  // Privy User
-  static const String getPrivyUsers = '/privy/users';
-  static const String getWalletBalance = '/privy/users/balance';
+  //  Transaction
+  static const String getTransactions = '/explorer/transactions';
+  static const String getTokenTransfers = '/explorer/token-transfers';
+  static const String getInternalTransactions =
+      '/explorer/internal-transactions';
 
-  // Privy Transaction
-  static const String getTransactionsFromPrivy =
-      '/privy/transactions/from-privy';
-  static const String getUserTransactions = '/privy/transactions';
-  static String getTransactionById(String id) => '/privy/transactions/$id';
+  // Tx
+  static const String estimateSwap = '/swap/estimate';
+  static const String prepareSwap = '/swap/prepare';
+  static const String swap = '/swap/send';
+  static const String createTx = '/smart-wallet/create-tx';
+  static const String submitTx = '/smart-wallet/submit-tx';
 
-  // Currency
-  static const String getAllCurrencies = '/currency/currencies';
-  static String getCurrencyBySymbol(String symbol) =>
-      '/currency/currencies/$symbol';
-
-  // Legacy
-  static const String getAllCategories = '/app/category';
-
-  // Swap
-  static const String estimateSwap = '/privy/transactions/estimate-swap';
-  static const String swap = '/privy/transactions/swap';
+  // Balance
+  static const String getBalance = '/explorer/balance';
 }
