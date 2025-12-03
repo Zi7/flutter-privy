@@ -1,0 +1,30 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always"
+  },
+  "editor.formatOnSave": true,
+  "dart.flutterHotRestartOnSave": true,
+  "dart.previewFlutterUiGuides": true,
+  "dart.previewFlutterUiGuidesCustomTracking": true,
+  "dart.lineLength": 100,
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+      100
+    ],
+    "editor.selectionHighlight": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off",
+    "files.insertFinalNewline": true
+  },
+  "search.exclude": {
+    "**/build": true
+  },
+  "files.watcherExclude": {
+    "**/build": true
+  },
+  "dart.flutterGenerateLocalizationsOnSave": "all",
+  "editor.accessibilitySupport": "off",
+}

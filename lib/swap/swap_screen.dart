@@ -9,8 +9,9 @@ import '../data/model/asset.dart';
 
 class SwapScreen extends StatefulWidget {
   final EmbeddedEthereumWallet ethereumWallet;
+  final double amount;
 
-  const SwapScreen({super.key, required this.ethereumWallet});
+  const SwapScreen({super.key, required this.ethereumWallet, required this.amount});
 
   @override
   State<SwapScreen> createState() => _SwapScreenState();
@@ -25,22 +26,21 @@ class _SwapScreenState extends State<SwapScreen> {
   @override
   void initState() {
     super.initState();
-    // Set default from asset to SOL
     _fromAsset = Asset(
+      name: 'Ethereum',
+      symbol: 'ETH',
+      balance: widget.amount,
+      icon: AppSvg.icEth(size: 24), // Placeholder
+      iconLarge: AppSvg.icEth(size: 40),
+      address: '0x0000000000000000000000000000000000000000',
+    );
+    _toAsset = Asset(
       name: 'USDC',
       symbol: 'USDC',
       balance: 10002,
       icon: AppSvg.icUsdc(size: 24),
       iconLarge: AppSvg.icUsdc(size: 40),
-      address: '0xbA386FB039f7d35BE74214e88aBe9D0d055139Bd',
-    );
-    _toAsset = Asset(
-      name: 'Binance',
-      symbol: 'BNB',
-      balance: 139.13,
-      icon: AppSvg.icBsc(size: 24), // Placeholder
-      iconLarge: AppSvg.icBsc(size: 40),
-      address: '0xae13d989dac2f0debff460ac112a837c89baa7cd',
+      address: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
     );
   }
 
@@ -76,11 +76,7 @@ class _SwapScreenState extends State<SwapScreen> {
         centerTitle: true,
         title: const Text(
           'Multichain',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w500),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -114,11 +110,7 @@ class _SwapScreenState extends State<SwapScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Icon(
-                      Icons.swap_horizontal_circle,
-                      color: Colors.black,
-                      size: 25,
-                    ),
+                    child: const Icon(Icons.swap_horizontal_circle, color: Colors.black, size: 25),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -146,11 +138,7 @@ class _SwapScreenState extends State<SwapScreen> {
                     controller: _amountController,
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.none,
-                    style: const TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.w600,
-                      height: 1.0,
-                    ),
+                    style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w600, height: 1.0),
                     decoration: const InputDecoration(
                       hintText: '0.00000',
                       border: InputBorder.none,
@@ -181,9 +169,7 @@ class _SwapScreenState extends State<SwapScreen> {
                 onPressed: _isLoading ? null : _swapToken,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                 ),
                 child:
                     _isLoading
@@ -192,9 +178,7 @@ class _SwapScreenState extends State<SwapScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                         : const Text(
@@ -242,31 +226,16 @@ class _SwapScreenState extends State<SwapScreen> {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (asset != null) ...[
               asset.icon,
               const SizedBox(width: 8),
-              Text(
-                asset.symbol,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text(asset.symbol, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             ] else
-              Text(
-                placeholder,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Text(placeholder, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
             // const SizedBox(width: 4),
             // const Icon(Icons.keyboard_arrow_down, size: 16),
           ],
@@ -279,15 +248,9 @@ class _SwapScreenState extends State<SwapScreen> {
     return Expanded(
       child: Container(
         height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
         child: Center(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-          ),
+          child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
         ),
       ),
     );
@@ -298,27 +261,9 @@ class _SwapScreenState extends State<SwapScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
         children: [
-          Row(
-            children: [
-              _buildNumpadKey('1'),
-              _buildNumpadKey('2'),
-              _buildNumpadKey('3'),
-            ],
-          ),
-          Row(
-            children: [
-              _buildNumpadKey('4'),
-              _buildNumpadKey('5'),
-              _buildNumpadKey('6'),
-            ],
-          ),
-          Row(
-            children: [
-              _buildNumpadKey('7'),
-              _buildNumpadKey('8'),
-              _buildNumpadKey('9'),
-            ],
-          ),
+          Row(children: [_buildNumpadKey('1'), _buildNumpadKey('2'), _buildNumpadKey('3')]),
+          Row(children: [_buildNumpadKey('4'), _buildNumpadKey('5'), _buildNumpadKey('6')]),
+          Row(children: [_buildNumpadKey('7'), _buildNumpadKey('8'), _buildNumpadKey('9')]),
           Row(
             children: [
               _buildNumpadKey('.'),
@@ -350,18 +295,9 @@ class _SwapScreenState extends State<SwapScreen> {
           },
           child: Container(
             height: 56,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
             child: Center(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              child: Text(text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
             ),
           ),
         ),
@@ -426,10 +362,7 @@ class _SwapScreenState extends State<SwapScreen> {
           }
         },
         onFailure: (error) {
-          _showMessage(
-            "Secp256k1 sign failed: ${error.message}",
-            isError: true,
-          );
+          _showMessage("Secp256k1 sign failed: ${error.message}", isError: true);
         },
       );
     } catch (e) {

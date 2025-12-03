@@ -58,10 +58,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
     final toAddress = _addressController.text.trim();
 
     if (toAddress.isEmpty || amount.isEmpty) {
-      _showMessage(
-        "Please enter both recipient address and amount",
-        isError: true,
-      );
+      _showMessage("Please enter both recipient address and amount", isError: true);
       return;
     }
 
@@ -90,7 +87,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
       setState(() {
         _isLoading = false;
       });
-      _showMessage("Transaction failed: $e", isError: true);
+      _showMessage("Withdraw failed: $e", isError: true);
     }
   }
 
@@ -107,17 +104,14 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
             _isLoading = false;
           });
           if (res.message == "success") {
-            _showMessage("Transaction successful");
+            _showMessage("Withdraw successful");
             Navigator.pop(context);
           } else {
             _showMessage(res.message, isError: true);
           }
         },
         onFailure: (error) {
-          _showMessage(
-            "Secp256k1 sign failed: ${error.message}",
-            isError: true,
-          );
+          _showMessage("Secp256k1 sign failed: ${error.message}", isError: true);
         },
       );
     } catch (e) {
@@ -145,11 +139,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
             children: [
               const Text(
                 'Withdraw Asset',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: Colors.black),
               ),
               const SizedBox(height: 24),
 
@@ -171,20 +161,11 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                   children: [
                     AppSvg.icEth(size: 40),
                     const SizedBox(width: 12),
-                    const Text(
-                      'ETH',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    const Text('ETH', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     const Spacer(),
                     Text(
                       '${widget.amount}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     const Icon(Icons.keyboard_arrow_down, size: 20),
                   ],
@@ -196,18 +177,12 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
               // Amount Input
               const Text(
                 'Amount',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   hintText: '0.0',
                   hintStyle: TextStyle(color: Colors.grey[400]),
@@ -217,10 +192,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),
               ),
 
@@ -229,11 +201,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
               // Wallet Address Input
               const Text(
                 'Wallet Address',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -247,10 +215,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.content_paste, size: 20),
                     onPressed: _pasteFromClipboard,
@@ -270,9 +235,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     elevation: 0,
                   ),
                   child:
@@ -282,17 +245,12 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                           : const Text(
                             'Continue',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                           ),
                 ),
               ),

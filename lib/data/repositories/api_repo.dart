@@ -4,6 +4,7 @@ import 'package:privyio/data/model/base_response.dart';
 import 'package:privyio/data/model/create_tx_request.dart';
 import 'package:privyio/data/model/create_tx_response.dart';
 import 'package:privyio/data/model/prepare_swap.dart';
+import 'package:privyio/data/model/transactions.dart';
 import 'package:privyio/data/model/user_profile.dart';
 import 'package:privyio/data/model/wallet_balance.dart';
 import 'package:privyio/utils/log.dart';
@@ -45,26 +46,26 @@ final class ApiRepo extends BaseRepository {
 
   /// Get transactions
   /// GET /api/explorer/transactions
-  Future<BaseResponse> getTransactions(String address) async {
-    final queries = {'network': 'sepolia', 'address': address};
+  Future<Transactions> getTransactions(int smartWalletId) async {
+    final queries = {'network': 'sepolia', 'smartWalletId': smartWalletId.toString()};
     final res = await get(Endpoints.getTransactions, query: queries);
-    return BaseResponse.fromJson(res.body);
+    return Transactions.fromJson(res.body);
   }
 
   /// Get token transfers
   /// GET /api/explorer/token-transfers
-  Future<BaseResponse> getTokenTransfers(String address) async {
-    final queries = {'network': 'sepolia', 'address': address};
+  Future<Transactions> getTokenTransfers(int smartWalletId) async {
+    final queries = {'network': 'sepolia', 'smartWalletId': smartWalletId.toString()};
     final res = await get(Endpoints.getTokenTransfers, query: queries);
-    return BaseResponse.fromJson(res.body);
+    return Transactions.fromJson(res.body);
   }
 
   /// Get internal transactions
   /// GET /api/explorer/internal-transactions
-  Future<BaseResponse> getInternalTransactions(String address) async {
-    final queries = {'network': 'sepolia', 'address': address};
+  Future<Transactions> getInternalTransactions(int smartWalletId) async {
+    final queries = {'network': 'sepolia', 'smartWalletId': smartWalletId.toString()};
     final res = await get(Endpoints.getInternalTransactions, query: queries);
-    return BaseResponse.fromJson(res.body);
+    return Transactions.fromJson(res.body);
   }
 
   // ==================== Swap ====================
@@ -109,8 +110,8 @@ final class ApiRepo extends BaseRepository {
 
   /// Get balance
   /// GET /api/explorer/balance
-  Future<WalletBalance> getBalance(String address) async {
-    final queries = {'address': address, 'network': 'sepolia'};
+  Future<WalletBalance> getBalance(int smartWalletId) async {
+    final queries = {'network': 'sepolia', 'smartWalletId': smartWalletId.toString()};
     final res = await get(Endpoints.getBalance, query: queries);
     return WalletBalance.fromJson(res.body);
   }

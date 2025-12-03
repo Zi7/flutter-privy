@@ -2,11 +2,7 @@ import 'package:intl/intl.dart';
 
 extension DoubleExtensions on double {
   String formatDouble({bool isKeep = false, bool isTwoDecimal = false}) {
-    return NumberUtil.formatDouble(
-      this,
-      isKeep: isKeep,
-      isTwoDecimal: isTwoDecimal,
-    );
+    return NumberUtil.formatDouble(this, isKeep: isKeep, isTwoDecimal: isTwoDecimal);
   }
 
   String formatDoubleV2({bool isKeep = false}) {
@@ -44,11 +40,7 @@ extension NumExtensions on num {
 }
 
 final class NumberUtil {
-  static String formatDouble(
-    double number, {
-    bool isKeep = false,
-    isTwoDecimal = false,
-  }) {
+  static String formatDouble(double number, {bool isKeep = false, isTwoDecimal = false}) {
     if (number.abs() < 0.000001) {
       return '0.00';
     }
@@ -59,11 +51,7 @@ final class NumberUtil {
     if (number.abs() >= 1 || number == 0.0 || number.isNaN || isTwoDecimal) {
       var f = NumberFormat("###,###.##", "en_US");
       String s = f.format(
-        number.isNaN
-            ? 0
-            : (number > 0 && number < 3
-                ? (number * 100).floor() / 100
-                : number),
+        number.isNaN ? 0 : (number > 0 && number < 3 ? (number * 100).floor() / 100 : number),
       );
       if (s.contains('.')) {
         final split = s.split('.');
@@ -110,10 +98,7 @@ final class NumberUtil {
   static String formatNumber(double number, {String separator = ','}) {
     return number
         .toStringAsFixed(0)
-        .replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}$separator',
-        );
+        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}$separator');
   }
 
   static String formatTimer(int timer) {
@@ -124,5 +109,11 @@ final class NumberUtil {
 
   static String formatMin(String min) {
     return NumberUtil.formatDouble(double.tryParse(min) ?? 0);
+  }
+}
+
+extension StringExtensions on String {
+  String cap0() {
+    return this[0].toUpperCase() + substring(1);
   }
 }
