@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 class Transactions {
   final String? code;
@@ -15,7 +16,7 @@ class Transactions {
     code: json["code"],
     message: json["message"],
     data:
-        json["data"] == null
+        json["data"] == null || json["data"] is! Array
             ? []
             : List<Transaction>.from(json["data"]!.map((x) => Transaction.fromJson(x))),
   );

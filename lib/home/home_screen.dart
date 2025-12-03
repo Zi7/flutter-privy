@@ -40,6 +40,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   _loginApex() async {
     try {
+      if (widget.user.embeddedEthereumWallets.isEmpty) {
+        await widget.user.createEthereumWallet();
+      }
+      if (widget.user.embeddedSolanaWallets.isEmpty) {
+        await widget.user.createSolanaWallet();
+      }
       final result = await widget.user.getAccessToken();
       result.fold(
         onSuccess: (value) async {
@@ -300,6 +306,13 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_transactions == null)
             const Center(
               child: Padding(padding: EdgeInsets.all(30.0), child: CircularProgressIndicator()),
+            )
+          else if (_transactions!.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(30.0),
+                child: Text('No transactions yet', style: TextStyle(color: Colors.grey)),
+              ),
             )
           else
             ListView.separated(
